@@ -42,7 +42,7 @@ void imprimirLista(Nodo *lista) {
 }
 
 int main() {
-  Nodo *listaPatito = NULL;
+  Nodo *lista = NULL;
   int i;
   bool rechazado;
 
@@ -55,14 +55,14 @@ int main() {
   int pids3[] = {};
   int lpids3 = 0;
 
-  listaPatito = actualizar(listaPatito, pids1, lpids1);
-  imprimirLista(listaPatito);
+  lista = actualizar(lista, pids1, lpids1);
+  imprimirLista(lista);
 
-  listaPatito = actualizar(listaPatito, pids2, lpids2);
-  imprimirLista(listaPatito);
+  lista = actualizar(lista, pids2, lpids2);
+  imprimirLista(lista);
 
-  listaPatito = actualizar(listaPatito, pids3, lpids3);
-  imprimirLista(listaPatito);
+  lista = actualizar(lista, pids3, lpids3);
+  imprimirLista(lista);
 }
 
 /*
