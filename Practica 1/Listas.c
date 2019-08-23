@@ -3,7 +3,7 @@
 Nodo *crearNodo() {
   Nodo *aux = malloc(sizeof(struct Nodo));
 
-  aux->marcado = false;
+  aux->marcado = true;
   aux->pid = 0;
   aux->siguiente = NULL;
 
@@ -73,8 +73,14 @@ Nodo *eliminarNoMarcados(Nodo *lista, Nodo **eliminados) {
   lista = anterior = actual;
   actual = actual->siguiente;
 
+  // Desmarcar anterior
+  anterior->marcado = false;
+
   while (actual != NULL) {
     if (actual->marcado) {
+      // Debemos de desmarcarlo, una vez que ya se eliminaron los marcados.
+      actual->marcado = false;
+
       anterior = actual;
       actual = actual->siguiente;
     } else {
