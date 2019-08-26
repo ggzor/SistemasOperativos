@@ -10,26 +10,26 @@ Nodo *crearNodo() {
   return aux;
 }
 
-bool existe(Nodo *lista, int pid) {
-  while (lista != NULL) {
-    if (lista->pid == pid) {
-      return true;
-    }
+void liberarLista(Nodo *lista) {
+  Nodo *aux = lista;
 
+  while (aux != NULL) {
     lista = lista->siguiente;
+    free(aux);
+    aux = lista;
   }
-
-  return false;
 }
 
-void marcar(Nodo *lista, int pid) {
+Nodo *buscar(Nodo *lista, int pid) {
   while (lista != NULL) {
     if (lista->pid == pid) {
-      lista->marcado = true;
+      return lista;
     }
 
     lista = lista->siguiente;
   }
+
+  return NULL;
 }
 
 Nodo *insertar(Nodo *lista, Nodo *nuevo) {

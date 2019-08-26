@@ -2,13 +2,14 @@
 #include <stdio.h>
 
 Nodo *actualizar(Nodo *lista, int *pids, int lpids) {
-  Nodo *eliminados = NULL, *nuevo = NULL;
+  Nodo *eliminados = NULL, *nuevo = NULL, *nodo;
   int i;
 
   printf("Nuevos:");
   for (i = 0; i < lpids; i++) {
-    if (existe(lista, pids[i])) {
-      marcar(lista, pids[i]);
+    nodo = buscar(lista, pids[i]);
+    if (nodo != NULL) {
+      nodo->marcado = true;
     } else {
       printf(" %d", pids[i]);
       nuevo = crearNodo();

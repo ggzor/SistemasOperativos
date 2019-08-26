@@ -8,18 +8,17 @@ typedef struct Nodo
 {
   bool marcado;
   int pid;
+  char tty[6];
+  char stat[6];
+  char time[6];
+  char cmd[31];
   struct Nodo *siguiente;
 } Nodo;
 
 Nodo *crearNodo();
+void liberarLista(Nodo *lista);
 
-/**
- * Función que verifica si existe un nodo con el PID especificado,
- * la función es necesaria para evitar la creación de un nodo al insertar.
- */
-bool existe(Nodo *lista, int pid);
-void marcar(Nodo *lista, int pid);
-
+Nodo *buscar(Nodo *lista, int pid);
 Nodo *insertar(Nodo *lista, Nodo *nuevo);
 Nodo *eliminarNoMarcados(Nodo *lista, Nodo **eliminados);
 
