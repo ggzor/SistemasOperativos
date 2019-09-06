@@ -67,7 +67,7 @@ Nodo *actualizar(Nodo *lista, char *contenido, int tamano, int *hayCambios) {
   while (token != NULL) {
     // Para saltar la primera línea
     if (primero) {
-      primero = false;
+      primero = 0;
     } else {
       sscanf(token, "%d", &pid);
 
@@ -84,7 +84,7 @@ Nodo *actualizar(Nodo *lista, char *contenido, int tamano, int *hayCambios) {
         
         // Leer los datos del nuevo nodo
         sscanf(token, "%d %5s %5s %5s %30[^\n]", &nuevo->pid, nuevo->tty, nuevo->stat, nuevo->time, nuevo->cmd);
-        nuevo->marcado = true;
+        nuevo->marcado = 1;
 
         lista = insertar(lista, nuevo);
 
