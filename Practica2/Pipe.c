@@ -7,8 +7,6 @@
 #include <pwd.h>
 #include <time.h>
 
-void mostrarArchivo(DatosArchivo *datos);
-
 typedef struct {
   char nombre[256];
   unsigned long inodo;
@@ -19,6 +17,8 @@ typedef struct {
   int  hora[2];
   unsigned int permisos;
 } DatosArchivo;
+
+void mostrarArchivo(DatosArchivo *datos);
 
 int main(int argc, char **argv) {  
   int fd[2];
@@ -38,8 +38,6 @@ int main(int argc, char **argv) {
       directorio = opendir(argv[1]);
 
       if (directorio != NULL) {
-        printf("%-12s %8s  %-11s %-10s %7s %-10s %-5s %s\n", "NOMBRE", "INODO", "TIPO", "PROPIETARIO", "TAMAÑO", "FECHA", "HORA", "PERMISOS");
-
         while (archivo = readdir(directorio)) {
           stat(archivo->d_name, &st); 
           usuario = getpwuid(st.st_uid);
@@ -60,15 +58,17 @@ int main(int argc, char **argv) {
           write(fd[1], &datos, sizeof(DatosArchivo));
         }
 
+        close(fd[1]);
         closedir(directorio);
       } else {
         printf("Error: No se pudo abrir el directorio.\n");
       }
-       
     } else {
       close(fd[1]);
-
-      read(fd[0], &datos, sizeof(DatosArchivo));
+      printf("%-12s %8s  %-11s %-10s %7s %-10s %-5s %s\n", "NOMBRE", "INODO", "TIPO", "PROPIETARIO", "TAMAÑO", "FECHA", "HORA", "PERMISOS");
+      
+      while (read(fd[0], &datos, sizeof(DatosArchivo)))
+        mostrarArchivo(&datos);
     }
   } else {
     printf("Error: No se proporcionó un directorio para mostrar.\n");
@@ -108,7 +108,7 @@ void mostrarArchivo(DatosArchivo *datos) {
   printf("%-12s ", datos->nombre);
 
   // Imprimir el inodo
-  printf("%8d ", datos->inodo);
+  printf("%8d  ", datos->inodo);
 
   // Imprimir el tipo
   if (datos->tipo == 8)
