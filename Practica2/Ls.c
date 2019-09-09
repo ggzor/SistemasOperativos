@@ -90,10 +90,9 @@ void mostrarArchivo(struct dirent *archivo) {
   printf("%7d " , st.st_size);
 
   // Imprimir la fecha
-  printf("%02d/%02d/%4d ", fecha->tm_mday, fecha->tm_mon, fecha->tm_year + 1900);
+  printf("%02d/%02d/%4d ", fecha->tm_mday, fecha->tm_mon + 1, fecha->tm_year + 1900);
 
   // Imprimir la hora
-  // color(VERDE, printf("%02d:%02d ", fecha->tm_hour, fecha->tm_min));
   printf("%02d:%02d ", fecha->tm_hour, fecha->tm_min);
 
   // Imprimir permisos
