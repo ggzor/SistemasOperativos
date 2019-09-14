@@ -148,4 +148,3 @@ void mostrarArchivo(DatosArchivo *datos, const char *rutaCompleta) {
 
   printf("\n");  
 }
-//descansa ardillita
