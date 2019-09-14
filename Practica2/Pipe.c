@@ -135,4 +135,3 @@ void mostrarArchivo(DatosArchivo *datos) {
 
   printf("\n");  
 }
-//descansa ardillita
