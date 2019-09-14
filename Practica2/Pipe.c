@@ -18,7 +18,7 @@ typedef struct {
   unsigned int permisos;
 } DatosArchivo;
 
-void mostrarArchivo(DatosArchivo *datos);
+void mostrarArchivo(DatosArchivo *datos, const char *rutaCompleta);
 
 int main(int argc, char **argv) {  
   int fd[2];
@@ -28,6 +28,8 @@ int main(int argc, char **argv) {
   struct stat st;
   struct passwd *usuario;
   struct tm *fecha;
+  int longitud, inicioArchivo;
+  char rutaCompleta[1000];
 
   if (argc > 1) {
     pipe(fd);
@@ -38,8 +40,17 @@ int main(int argc, char **argv) {
       directorio = opendir(argv[1]);
 
       if (directorio != NULL) {
+        strcpy(rutaCompleta,argv[1]);
+        longitud = inicioArchivo = strlen(rutaCompleta);
+        if(rutaCompleta[longitud-1] != '/') {
+          rutaCompleta[longitud] = '/';
+          inicioArchivo ++;
+        }
+
         while (archivo = readdir(directorio)) {
-          stat(archivo->d_name, &st); 
+          strcpy(rutaCompleta + inicioArchivo, archivo->d_name);
+
+          stat(rutaCompleta, &st); 
           usuario = getpwuid(st.st_uid);
           fecha = localtime(&st.st_mtime);          
           
@@ -65,10 +76,10 @@ int main(int argc, char **argv) {
       }
     } else {
       close(fd[1]);
-      printf("%-12s %8s  %-11s %-10s %7s %-10s %-5s %s\n", "NOMBRE", "INODO", "TIPO", "PROPIETARIO", "TAMAÑO", "FECHA", "HORA", "PERMISOS");
+      printf("%8s  %-11s %-10s %7s %-10s %-5s %-9s  %-12s\n", "INODO", "TIPO", "PROPIETARIO", "TAMAÑO", "FECHA", "HORA", "PERMISOS", "NOMBRE" );
       
       while (read(fd[0], &datos, sizeof(DatosArchivo)))
-        mostrarArchivo(&datos);
+        mostrarArchivo(&datos,rutaCompleta);
     }
   } else {
     printf("Error: No se proporcionó un directorio para mostrar.\n");
@@ -103,17 +114,15 @@ void imprimirPermisos(unsigned int modo) {
   }
 }
 
-void mostrarArchivo(DatosArchivo *datos) {
-  // Imprimir nombre
-  printf("%-12s ", datos->nombre);
+void mostrarArchivo(DatosArchivo *datos, const char *rutaCompleta) {
 
   // Imprimir el inodo
   printf("%8d  ", datos->inodo);
 
   // Imprimir el tipo
-  if (datos->tipo == 8)
+  if (datos->tipo == 4)
     printf("%-11s ", "Carpeta");
-  else if (datos->tipo == 4)
+  else if (datos->tipo == 8)
     printf("%-11s ", "Archivo");
   else
     printf("%-11s ", "Desconocido");
@@ -132,6 +141,10 @@ void mostrarArchivo(DatosArchivo *datos) {
 
   // Imprimir permisos
   imprimirPermisos(datos->permisos);
+  printf("  ");
+
+  // Imprimir nombre
+  printf("%-12s ", datos->nombre);
 
   printf("\n");  
 }
