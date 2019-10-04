@@ -2,6 +2,7 @@
 #include "Utilerias.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sys/ipc.h>
 #include <sys/sem.h>
@@ -124,7 +125,8 @@ void operarSobreSemaforo() {
 }
 
 void escribirSemaforo(int semid, struct semid_ds *info) {
-  int semnum, valor;
+  int semnum, valor, i;
+  unsigned short *valores;
   union semun operaciones;
 
   do {
@@ -152,6 +154,23 @@ void escribirSemaforo(int semid, struct semid_ds *info) {
       esperarEnter();
       break;
     case 2:
+      valores = (unsigned short *) malloc(sizeof(unsigned short) * info->sem_nsems);
+      printf("Ingrese %d valores para cada uno de los semaforos: ", info->sem_nsems);
+
+      for (i = 0; i < info->sem_nsems; i++) {
+        scanf("%d%*c", &valor);
+        valores[i] = (unsigned short) valor;
+      }
+
+      operaciones.array = valores;
+
+      if (semctl(semid, 0, SETALL, operaciones) >= 0)
+        printf("Se establecieron los valores correctamente.\n");
+      else
+        printf("No se pudieron establecer los valores del semáforo.\n");
+
+      free(valores);
+      esperarEnter();
       break;
     case 3:
       return;
@@ -163,7 +182,9 @@ void escribirSemaforo(int semid, struct semid_ds *info) {
 }
 
 void leerSemaforo(int semid, struct semid_ds *info) {
-  int semnum, valor;
+  int semnum, valor, i;
+  unsigned short *valores;
+  union semun operaciones;
 
   do {
     limpiarPantalla();
@@ -186,7 +207,21 @@ void leerSemaforo(int semid, struct semid_ds *info) {
       esperarEnter();
       break;
     case 2:
-      
+      valores = (unsigned short *) malloc(sizeof(unsigned short) * info->sem_nsems);
+      operaciones.array = valores;
+
+      if (semctl(semid, 0, GETALL, operaciones) >= 0) {
+        printf("Los valores del semáforo son: ");
+
+        for (i = 0; i < info->sem_nsems; i++)
+          printf("%d ", valores[i]);
+        printf("\n");
+      } else {
+        printf("No se pudieron obtener los valores del semáforo.\n");
+      }
+
+      free(valores);
+      esperarEnter();
       break;
     case 3:
       return;
@@ -198,10 +233,11 @@ void leerSemaforo(int semid, struct semid_ds *info) {
 }
 
 void operarSemaforo(int semid, struct semid_ds *info) {
-  int semnum, operacion;
-  struct sembuf down = { 0, -1, 0 };
-  struct sembuf up = {0, +1, 0 };
-  struct sembuf op = { 0, 0, 0 };
+  int semnum, operacion, i;
+  struct sembuf down = { 0, -1, 0 },
+                up   = { 0, +1, 0 },
+                op   = { 0,  0, 0 },
+                *ops;
   
   do {
     limpiarPantalla();
@@ -210,7 +246,9 @@ void operarSemaforo(int semid, struct semid_ds *info) {
     printf("1. Decrementar\n");
     printf("2. Incrementar\n");
     printf("3. Agregar o restar otra cantidad\n");
-    printf("4. Regresar\n");
+    printf("4. Decrementar todos\n");
+    printf("5. Incrementar todos\n");
+    printf("6. Regresar\n");
 
     switch (obtenerOpcion()) {
     case 1:
@@ -254,6 +292,40 @@ void operarSemaforo(int semid, struct semid_ds *info) {
       esperarEnter();
       break;
     case 4:
+      ops = malloc(sizeof(struct sembuf) * info->sem_nsems);
+
+      for (i = 0; i < info->sem_nsems; i++) {
+        ops[i].sem_num = (unsigned short) i;
+        ops[i].sem_op = -1;
+        ops[i].sem_flg = 0;
+      }
+
+      if (semop(semid, ops, info->sem_nsems) >= 0)
+        printf("La operación fue exitosa.\n");
+      else 
+        printf("No se pudieron decrementar los valores de los semáforos.\n");
+
+      free(ops);
+      esperarEnter();
+      break;
+    case 5:
+      ops = malloc(sizeof(struct sembuf) * info->sem_nsems);
+
+      for (i = 0; i < info->sem_nsems; i++) {
+        ops[i].sem_num = (unsigned short) i;
+        ops[i].sem_op = 1;
+        ops[i].sem_flg = 0;
+      }
+
+      if (semop(semid, ops, info->sem_nsems) >= 0)
+        printf("La operación fue exitosa.\n");
+      else 
+        printf("No se pudieron incrementar los valores de los semáforos.\n");
+
+      free(ops);
+      esperarEnter();
+      break;
+    case 6:
       return;
     default:
       printf("\nNo se reconoció la opción.\n");
