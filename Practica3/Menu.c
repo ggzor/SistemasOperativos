@@ -31,6 +31,7 @@ int main() {
 
       default:
         printf("\nNo se reconoció la opción.\n");
+        esperarEnter();
     }
   } while (1);
 }

@@ -45,6 +45,7 @@ void operacionesSemaforos() {
 
       default:
         printf("\nNo se reconoció la opción.\n");
+        esperarEnter();
     }
 
   } while (1);
@@ -56,7 +57,7 @@ void crearSemaforo() {
   printf("Ingrese el número de semáforos que quiere crear: ");
   scanf("%d%*c", &numeroSemaforos);
 
-  printf("Ingrese los permisos del semáforo: ");
+  printf("Ingrese los permisos del semáforo (en octal): ");
   scanf("%o%*c", &permisos);
 
   semid = semget(IPC_PRIVATE, numeroSemaforos, IPC_CREAT | permisos);
@@ -70,7 +71,7 @@ void crearSemaforo() {
 
 void escribirSemaforo(int semid);
 void leerSemaforo(int semid);
-void operarSemaforo();
+void operarSemaforo(int semid);
 
 void operarSobreSemaforo() {
   int semid;
@@ -83,7 +84,7 @@ void operarSobreSemaforo() {
   do {
     limpiarPantalla();
     printf("=== Operar sobre semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n"), semid;
+    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
 
     printf("1. Escribir \n");
     printf("2. Leer \n");
@@ -100,25 +101,26 @@ void operarSobreSemaforo() {
       break;
 
     case 3:
-      operarSemaforo();
+      operarSemaforo(semid);
       break;
 
     case 4:
       return;
     default:
       printf("\nNo se reconoció la opción.\n");
+      esperarEnter();
     }
   } while (1);
 }
 
 void escribirSemaforo(int semid) {
-  int semnum;
+  int semnum, valor;
   union semun operaciones;
 
   do {
     limpiarPantalla();
     printf("=== Escritura de semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n"), semid;
+    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
     printf("1. Escritura única\n");
     printf("2. Escritura múltiple\n");
     printf("3. Regresar\n");
@@ -129,7 +131,8 @@ void escribirSemaforo(int semid) {
       scanf("%d%*c", &semnum);
 
       printf("Ingrese el valor al que quiere establecer el semáforo: ");
-      scanf("%d%c", &operaciones.val);
+      scanf("%d%*c", &valor);
+      operaciones.val = valor;
 
       if (semctl(semid, semnum, SETVAL, operaciones) >= 0)
         printf("Se estableció el valor correctamente.\n");
@@ -144,50 +147,107 @@ void escribirSemaforo(int semid) {
       return;
     default:
       printf("\nNo se reconoció la opción.\n");
+      esperarEnter();
     }
   } while (1);
 }
 
 void leerSemaforo(int semid) {
+  int semnum, valor;
+
   do {
     limpiarPantalla();
     printf("=== Lectura de semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n"), semid;
+    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
     printf("1. Lectura única \n");
     printf("2. Lectura múltiple\n");
     printf("3. Regresar\n");
 
     switch (obtenerOpcion()) {
     case 1:
+      printf("Ingrese el número de semáforo que quiere operar: ");
+      scanf("%d%*c", &semnum);
+
+      if ((valor = semctl(semid, semnum, GETVAL)) >= 0)
+        printf("El semáforo %d tiene el valor %d.\n", semnum, valor);
+      else
+        printf("No se pudo obtener el valor del semáforo.\n");
+
+      esperarEnter();
       break;
     case 2:
+
       break;
     case 3:
       return;
     default:
       printf("\nNo se reconoció la opción.\n");
+      esperarEnter();
     }
   } while (1);
 }
 
-void operarSemaforo() {
+void operarSemaforo(int semid) {
+  int semnum, operacion;
+  struct sembuf down = { 0, -1, 0 };
+  struct sembuf up = {0, +1, 0 };
+  struct sembuf op = { 0, 0, 0 };
+  
   do {
     limpiarPantalla();
     printf("=== Operar semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n"), semid;
+    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
     printf("1. Decrementar\n");
     printf("2. Incrementar\n");
-    printf("3. Regresar\n");
+    printf("3. Agregar o restar otra cantidad\n");
+    printf("4. Regresar\n");
 
     switch (obtenerOpcion()) {
     case 1:
+      printf("Ingrese el número de semáforo que quiere operar: ");
+      scanf("%d%*c", &semnum);
+      down.sem_num = (unsigned short) semnum;
+
+      if(semop(semid, &down, 1) >= 0) 
+        printf("El decremento fue exitoso.\n");
+      else 
+        printf("No se pudo decrementar el valor del semáforo.\n");
+
+      esperarEnter();
       break;
     case 2:
+      printf("Ingrese el número de semáforo que quiere operar: ");
+      scanf("%d%*c", &semnum);
+      up.sem_num = (unsigned short) semnum;
+      
+      if(semop(semid, &up, 1) >= 0) 
+        printf("El incremento fue exitoso.\n");
+      else 
+        printf("No se pudo incrementar el valor del semáforo.\n");
+
+      esperarEnter();
       break;
     case 3:
+      printf("Ingrese el número de semáforo que quiere operar: ");
+      scanf("%d%*c", &semnum);
+      op.sem_num = (unsigned short) semnum;
+
+      printf("Ingrese la cantidad de incremento o decremento que desea agregar: ");
+      scanf("%d%*c", &operacion);
+      op.sem_op = (short) operacion;
+
+      if(semop(semid, &op, 1) >= 0) 
+        printf("La operación fue exitosa.\n");
+      else 
+        printf("No se pudo incrementar el valor del semáforo.\n");
+
+      esperarEnter();
+      break;
+    case 4:
       return;
     default:
       printf("\nNo se reconoció la opción.\n");
+      esperarEnter();
     }
   } while (1);
 }
