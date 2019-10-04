@@ -1,0 +1,9 @@
+Menú:
+  Semáforos:
+    - Crear semáforo con la clave dada. # Usando ftok
+    - Leer del semáforo.
+    - Escribir en el semáforo.
+    - Aplicar operación en el semáforo.
+
+
+Productor-Consumidor:
