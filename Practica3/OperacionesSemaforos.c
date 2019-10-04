@@ -69,22 +69,32 @@ void crearSemaforo() {
   esperarEnter();
 }
 
-void escribirSemaforo(int semid);
-void leerSemaforo(int semid);
-void operarSemaforo(int semid);
+void escribirSemaforo(int semid, struct semid_ds *info);
+void leerSemaforo(int semid, struct semid_ds *info);
+void operarSemaforo(int semid, struct semid_ds *info);
 
 void operarSobreSemaforo() {
   int semid;
+  union semun op;
+  struct semid_ds info;
+  op.buf = &info;
 
+  limpiarPantalla();
   printf("=== Operar sobre semáforo ===\n");
 
   printf("Introduzca el semid del semáforo: ");
   scanf("%d%*c", &semid);
 
+  if (semctl(semid, 0, IPC_STAT, op) < 0) {
+    printf("No existe algún semáforo con el semid especificado.\n");
+    esperarEnter();
+    return;
+  }
+
   do {
     limpiarPantalla();
     printf("=== Operar sobre semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
+    printf("\nEl semid del semáforo actual es %d que contiene %d semáforos.\n\n", semid, info.sem_nsems);
 
     printf("1. Escribir \n");
     printf("2. Leer \n");
@@ -93,15 +103,15 @@ void operarSobreSemaforo() {
 
     switch (obtenerOpcion()) {
     case 1:
-      escribirSemaforo(semid);
+      escribirSemaforo(semid, &info);
       break;
       
     case 2:
-      leerSemaforo(semid);
+      leerSemaforo(semid, &info);
       break;
 
     case 3:
-      operarSemaforo(semid);
+      operarSemaforo(semid, &info);
       break;
 
     case 4:
@@ -113,14 +123,14 @@ void operarSobreSemaforo() {
   } while (1);
 }
 
-void escribirSemaforo(int semid) {
+void escribirSemaforo(int semid, struct semid_ds *info) {
   int semnum, valor;
   union semun operaciones;
 
   do {
     limpiarPantalla();
     printf("=== Escritura de semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
+    printf("\nEl semid del semáforo actual es %d que contiene %d semáforos.\n\n", semid, info->sem_nsems);
     printf("1. Escritura única\n");
     printf("2. Escritura múltiple\n");
     printf("3. Regresar\n");
@@ -152,13 +162,13 @@ void escribirSemaforo(int semid) {
   } while (1);
 }
 
-void leerSemaforo(int semid) {
+void leerSemaforo(int semid, struct semid_ds *info) {
   int semnum, valor;
 
   do {
     limpiarPantalla();
     printf("=== Lectura de semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
+    printf("\nEl semid del semáforo actual es %d que contiene %d semáforos.\n\n", semid, info->sem_nsems);
     printf("1. Lectura única \n");
     printf("2. Lectura múltiple\n");
     printf("3. Regresar\n");
@@ -176,7 +186,7 @@ void leerSemaforo(int semid) {
       esperarEnter();
       break;
     case 2:
-
+      
       break;
     case 3:
       return;
@@ -187,7 +197,7 @@ void leerSemaforo(int semid) {
   } while (1);
 }
 
-void operarSemaforo(int semid) {
+void operarSemaforo(int semid, struct semid_ds *info) {
   int semnum, operacion;
   struct sembuf down = { 0, -1, 0 };
   struct sembuf up = {0, +1, 0 };
@@ -196,7 +206,7 @@ void operarSemaforo(int semid) {
   do {
     limpiarPantalla();
     printf("=== Operar semáforo ===\n");
-    printf("\nEl semid del semáforo actual es %d.\n\n", semid);
+    printf("\nEl semid del semáforo actual es %d que contiene %d semáforos.\n\n", semid, info->sem_nsems);
     printf("1. Decrementar\n");
     printf("2. Incrementar\n");
     printf("3. Agregar o restar otra cantidad\n");
