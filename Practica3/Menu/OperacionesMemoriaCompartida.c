@@ -37,6 +37,10 @@ void operacionesMemoriaCompartida() {
         leerMemoriaCompartida();
         break;
 
+      case 4:
+        liberarMemoriaCompartida();
+        break;
+
       case 5:
         return;
 
@@ -56,7 +60,7 @@ void crearMemoriaCompartida() {
   printf("Ingrese los permisos del semáforo (en octal): ");
   scanf("%o%*c", &permisos);
 
-  // TODO: Asignar memoria compartida
+  shmid = shmget(IPC_PRIVATE, tamano, IPC_CREAT| permisos);
 
   if (shmid >= 0) 
     printf("Se creó exitosamente el bloque de memoria compartida con shmid %d.\n", shmid);
@@ -74,27 +78,42 @@ void escribirMemoriaCompartida() {
   printf("Introduzca el shmid de la memoria compartida: ");
   scanf("%d%*c", &shmid);
 
-  // TODO: Obtener información del bloque de memoria compartida y validar
+  if (shmctl(shmid, IPC_STAT, &info) < 0) {
+    printf("No existe un bloque de memoria con el shmid especificado.\n");
+    esperarEnter();
+    return;
+  } 
 
-  // TODO: Adquirir segmento de memoria compartida
+  memoria = shmat(shmid, 0, 0);
 
   printf("Introduzca una cadena que se escribirá en la memoria compartida (max %d caracteres): ", info.shm_segsz - 1);
-  // TODO: Escribir en memoria compartida
+  fgets(memoria, info.shm_segsz, stdin);
+
+  esperarEnter();
 }
 
 void leerMemoriaCompartida() {
-  int shmid;
+  int shmid, i;
   struct shmid_ds info;
   char *memoria;
 
   printf("Introduzca el shmid de la memoria compartida: ");
   scanf("%d%*c", &shmid);
 
-  // TODO: Obtener información del bloque de memoria compartida y validar
+  if (shmctl(shmid, IPC_STAT, &info) < 0) {
+    printf("No existe un bloque de memoria con el shmid especificado.\n");
+    esperarEnter();
+    return;
+  } 
 
-  // TODO: Adquirir segmento de memoria compartida
+  memoria = shmat(shmid, 0, 0);
 
-  // TODO: Colocar caracter a caracter en la pantalla hasta encontrar fin de cadena o maximo de caracteres 
+  for ( i = 0; memoria[i] != '\0' && i < info.shm_segsz; i++)
+  {
+    printf("%c", memoria[i]);
+  }
+
+  esperarEnter();
 }
 
 void liberarMemoriaCompartida() {  
@@ -106,6 +125,17 @@ void liberarMemoriaCompartida() {
   scanf("%d%*c", &shmid);
 
   // TODO: Obtener información del bloque de memoria compartida y validar
+  if (shmctl(shmid, IPC_STAT, &info) < 0) {
+    printf("No existe un bloque de memoria con el shmid especificado.\n");
+    esperarEnter();
+    return;
+  } 
 
   // TODO: Remover segmento de memoria compartida
+  if(shmctl(shmid, IPC_RMID, 0) >= 0) 
+    printf("Se ha borrado correctamente el bloque de memoria compartida.\n");
+  else 
+    printf("No se pudo borrar el bloque de memoria compartida.\n");
+  
+  esperarEnter();
 }
