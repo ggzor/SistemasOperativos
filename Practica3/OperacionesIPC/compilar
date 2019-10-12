@@ -1,0 +1,3 @@
+#!/bin/sh
+
+gcc -o OperacionesIPC -g Main.c Utilerias.c OperacionesMemoriaCompartida.c OperacionesMensajes.c OperacionesSemaforos.c ParserOpciones.c
