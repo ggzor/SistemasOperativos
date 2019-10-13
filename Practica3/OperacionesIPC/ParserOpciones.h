@@ -5,14 +5,15 @@ typedef struct {
   char **argv;
   int argc;
 
-  int indiceEntero;
+  int indiceBandera;
   int indiceComando;
+  int indiceEntero;
 } Parser;
 
 Parser inicializarParser(int argc, char **argv);
-int siguienteEntero(Parser *parser, int *entero);
+int siguienteBandera(Parser *parser, char *bandera);
 int siguienteComando(Parser *parser, char **comando);
-int siguienteBandera(Parser *parser, char **bandera);
-int siguienteArgumentoEntero(Parser *parser, char **nombre, int *valor);
+int siguienteEnteroOctal(Parser *parser, int *entero);
+int siguienteEntero(Parser *parser, int *entero);
 
 #endif
