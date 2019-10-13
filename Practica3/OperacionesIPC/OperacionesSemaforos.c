@@ -78,11 +78,15 @@ int operacionesSemaforos(Parser *parser) {
 
         if (semctl(semid, 0, IPC_STAT, operaciones) >= 0) {
           if (siguienteEntero(parser, &semnum)) {
-            if ((valor = semctl(semid, semnum, GETVAL)) >= 0) {
-              printf("%d\n", valor);
-              return 0;
+            if (semnum < info.sem_nsems) {
+              if ((valor = semctl(semid, semnum, GETVAL)) >= 0) {
+                printf("%d\n", valor);
+                return 0;
+              } else {
+                printf("No se pudo obtener el valor del semáforo.\n");
+              }              
             } else {
-              printf("No se pudo obtener el valor del semáforo.\n");
+              printf("Error, sólo existen %d semáforos en el conjunto.\n", info.sem_nsems);
             }
           } else {
             valores = (unsigned short *) malloc(sizeof(unsigned short) * info.sem_nsems);
