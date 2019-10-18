@@ -18,8 +18,8 @@
 #define MIN_PRODUCTOR 1
 #define MAX_PRODUCTOR 1
 
-#define MIN_CONSUMIDOR 2
-#define MAX_CONSUMIDOR 4
+#define MIN_CONSUMIDOR 1
+#define MAX_CONSUMIDOR 3
 
 union semun {
   int val;
@@ -33,7 +33,7 @@ typedef struct {
   int fin;
   int n;
   int max;
-  int cola[N]; 
+  int pila[N]; 
 } Estado;
 
 
@@ -89,6 +89,7 @@ void productor() {
     down(EMPTY); 
     
     down(MUTEX);
+    printf("🏭  P: \e[32m%3d\e[0m \e[2m[%d]\e[0m\n", elemento, estado->n);
     agregarElemento(elemento);
     up(MUTEX); 
     
@@ -103,7 +104,6 @@ int producirElemento() {
   
   while (time(NULL) < fin);
 
-  printf("🏭  \e[2mSe ha producido\e[0m \e[34m%d\e[0m\n", elemento);
   return elemento;
 }
 
@@ -116,6 +116,7 @@ void consumidor() {
 
     down(MUTEX);
     elemento = removerElemento();
+    printf("✔️  C: \e[31m%3d\e[0m \e[2m[%d]\e[0m\n", elemento, estado->n);
     up(MUTEX);
     
     up(EMPTY);
@@ -128,11 +129,8 @@ void consumirElemento(int elemento) {
   int espera = MIN_CONSUMIDOR + rand() % (MAX_CONSUMIDOR - MIN_CONSUMIDOR + 1);
   time_t fin = time(NULL) + espera;
   
-  printf("⏳  \e[2mSe empezará a consumir\e[0m \e[31m%d\e[0m\n", elemento);
   while (time(NULL) < fin);
-  printf("✔️  \e[2mSe ha terminado de consumir\e[0m \e[32;1m%d\e[0m\n", elemento);
 }
-
 
 void up(short semaforo) {
   struct sembuf up = {semaforo, +1, 0};
@@ -154,11 +152,10 @@ void down(short semaforo) {
 
 void agregarElemento(int elemento) {
   if (estado->n == estado->max) {
-    printf("Se trató de insertar en una cola llena.\n");
+    printf("Se trató de insertar en una pila llena.\n");
     _exit(-1);
   } else {
-    estado->cola[estado->inicio] = elemento;
-    estado->inicio = (estado->max + (estado->inicio - 1)) % estado->max;
+    estado->pila[estado->n] = elemento;
     estado->n++;
   }
 }
@@ -167,12 +164,10 @@ int removerElemento() {
   int elemento;
 
   if (estado->n == 0) {
-    printf("Se trató de remover de una cola vacía.\n");
+    printf("Se trató de remover de una pila vacía.\n");
     _exit(-1);
   } else {
-    elemento = estado->cola[estado->fin];
-    estado->fin = (estado->max + (estado->fin - 1)) % estado->max;
     estado->n--;
-    return elemento;
+    return estado->pila[estado->n];
   }
 }
