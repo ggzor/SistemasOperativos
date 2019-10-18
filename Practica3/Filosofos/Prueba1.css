@@ -1,0 +1,19 @@
+@keyframes animacion {
+  0% { background-color: dodgerblue; }
+  20% { background-color: dodgerblue; }
+  
+  30% { background-color: yellow; }
+  50%  { background-color: yellow; }
+  
+  60% { background-color: tomato; }
+  80% { background-color: tomato; }
+
+  100% { background-color: dodgerblue; }
+}
+
+.tag1 {
+  animation: animacion 5s ease-in-out infinite;
+  padding: 4px;
+  font-weight: bold;
+  -gtk-icon-transform: rotate(45deg);
+}
