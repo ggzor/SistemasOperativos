@@ -1,19 +1,23 @@
-@keyframes animacion {
-  0% { background-color: dodgerblue; }
-  20% { background-color: dodgerblue; }
-  
-  30% { background-color: yellow; }
-  50%  { background-color: yellow; }
-  
-  60% { background-color: tomato; }
-  80% { background-color: tomato; }
-
-  100% { background-color: dodgerblue; }
+.tag1 {
+  transition: background-color 1s, border-radius 1s;
+  background-color: dodgerblue;
+  padding: 4px;
+  margin-top: 0px;
+  min-height: 40px;
+  min-width: 40px;
+  font-weight: bold;
 }
 
-.tag1 {
-  animation: animacion 5s ease-in-out infinite;
-  padding: 4px;
-  font-weight: bold;
-  -gtk-icon-transform: rotate(45deg);
+.tag2 {
+  border-radius: 50% / 20%;
+  background-color: tomato;
+}
+
+@keyframes forkAnimation {
+  from { -gtk-icon-transform: rotate(45deg); }
+  to { -gtk-icon-transform: rotate(90deg); }
+}
+
+.fork {
+  animation: forkAnimation calc(attr(width) * 1s) infinite alternate ease-in-out;
 }
