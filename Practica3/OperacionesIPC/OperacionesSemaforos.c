@@ -15,9 +15,36 @@ union semun {
   struct seminfo *__buf;
 };
 
+void ayudaSemaforos() {
+  printf(
+    "Uso: ./OperacionesIPC sem COMANDO [OPCIONES...]\n\n"
+    "Comandos:\n"
+    "  crear NSEM [PERMS=0666]\n"
+    "     Crear un conjunto de NSEM semáforos con los permisos PERMS\n"
+    "  establecer SEMID SEMNUM VAL\n"
+    "     Establecer semáforos\n"
+    "\n"
+    "  leer SEMID\n"
+    "     Leer todos los valores de un semáforo\n"
+    "  leer SEMID SEMNUM\n"
+    "     Leer el valor de un semáforo específico\n"
+    "\n"
+    "  operar SEMID OP\n"
+    "     Operar todos los semáforos\n"
+    "  operar SEMID OP SEMNUM\n"
+    "     Operar un semáforo específico\n"
+    "\n"
+    "  liberar SEMID\n"
+    "    Libera un conjunto de semáforos\n"
+    "\n"
+    "  help\n"
+    "    Muestra este mensaje de ayuda\n"
+  );
+}
+
 int operacionesSemaforos(Parser *parser) {
   char *comando, bandera;
-  char *comandos[] = { "crear", "establecer", "leer", "operar", "liberar" };
+  char *comandos[] = { "crear", "establecer", "leer", "operar", "liberar", "help"};
   int numSemCrear, semnum, valor, permisos = 0666, semid, incremento, i;
   union semun operaciones;
   struct semid_ds info;
@@ -25,18 +52,22 @@ int operacionesSemaforos(Parser *parser) {
   unsigned short *valores;
 
   if (siguienteComando(parser, &comando)) {
-    switch (indiceDeCadena(comandos, 5, comando))
+    switch (indiceDeCadena(comandos, 6, comando))
     {
     case 0:
       if (siguienteEntero(parser, &numSemCrear)) {
         siguienteEnteroOctal(parser, &permisos);
 
-        semid = semget(IPC_PRIVATE, numSemCrear, IPC_CREAT | permisos);
-        if (semid >= 0) {
-          printf("Se creó exitosamente el semáforo con semid %d.\n", semid);
-          return 0;
+        if (numSemCrear > 0) {
+          semid = semget(IPC_PRIVATE, numSemCrear, IPC_CREAT | permisos);
+          if (semid >= 0) {
+            printf("Se creó exitosamente el semáforo con semid %d.\n", semid);
+            return 0;
+          } else {
+            printf("Ocurrió un error al crear el semáforo.\n");
+          }
         } else {
-          printf("Ocurrió un error al crear el semáforo.\n");
+          printf("El número de semáforos tiene que ser mayor a 0.\n");
         }
       } else {
         printf("No se proporcionó el número de semáforos.\n");
@@ -49,17 +80,25 @@ int operacionesSemaforos(Parser *parser) {
 
         if (semctl(semid, 0, IPC_STAT, operaciones) >= 0) {
           if (siguienteEntero(parser, &semnum) && siguienteEntero(parser, &valor)) {
-            if (semnum < info.sem_nsems) {
-              operaciones.val = valor;
+            if (semnum >= 0) {
+              if (valor >= 0) {
+                if (semnum < info.sem_nsems) {
+                  operaciones.val = valor;
 
-              if (semctl(semid, semnum, SETVAL, operaciones) >= 0) {
-                printf("Se estableció el valor correctamente.\n");
-                return 0;
+                  if (semctl(semid, semnum, SETVAL, operaciones) >= 0) {
+                    printf("Se estableció el valor correctamente.\n");
+                    return 0;
+                  } else {
+                    printf("No se pudo establecer el valor del semáforo.\n");
+                  }
+                } else {
+                  printf("Error, sólo existen %d semáforos en el conjunto.\n", info.sem_nsems);
+                }
               } else {
-                printf("No se pudo establecer el valor del semáforo.\n");
+                printf("El valor de un semáforo no puede ser negativo.\n");
               }
             } else {
-              printf("Error, sólo existen %d semáforos en el conjunto.\n", info.sem_nsems);
+              printf("El número de semáforo no puede ser negativo.\n");
             }
           } else {
             printf("No se proporcionaron los suficientes parámetros para establecer el semáforo.\n");
@@ -111,8 +150,7 @@ int operacionesSemaforos(Parser *parser) {
       } else {
         printf("No se proporcionó el semid del semáforo.\n");
       }    
-
-      break;
+      return -1;
 
     case 3:
       if (siguienteEntero(parser, &semid)) {
@@ -184,12 +222,18 @@ int operacionesSemaforos(Parser *parser) {
       }
       return -1;
 
+    case 5:
+      ayudaSemaforos();
+      return 0;
+
     default:
-      printf("El comando \"%s\" no se ha reconocido.\nSólo puede ser uno de: crear, establecer, leer, operar o liberar.\n", comando);
+      printf("\e[31mERROR:\e[0m El comando \"%s\" no se ha reconocido.", comando);
+      ayudaSemaforos();
       return -1;
     }
   } else {
-    printf("No se proporcionó una operación para el comando sem.\n");
+    printf("\e[31mERROR:\e[0m No se proporcionó una operación para el comando sem.\n");
+    ayudaSemaforos();
     return -1;
   }
 }

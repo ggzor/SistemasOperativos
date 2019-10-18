@@ -7,15 +7,40 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 
+void ayudaMemoria() {
+  printf(
+    "Uso: ./OperacionesIPC shm COMANDO [OPCIONES...]\n\n"
+    "Comandos:\n"
+    "  crear NBYTES [PERMS=0666]\n"
+    "     Crear nuevo bloque de memoria compartida"
+         "de tamaño NBYTES\n"
+    "  \n"
+    "  escribir SHMID\n"
+    "     Establecer los datos de un bloque de memoria "
+         "compartida a partir de la entrada estandar\n"
+    "  \n"
+    "  leer SHMID\n"
+    "     Leer los datos de un bloque de memoria compartida "
+         "hasta encontrar un final de cadena \n"
+    "  \n"
+    "  liberar SHMID\n"
+    "     Liberar el bloque de memoria compartida con "
+         "el shmid especificado\n"
+    "\n"
+    "  help\n"
+    "     Muestra este mensaje de ayuda\n"
+  );  
+}
+
 int operacionesMemoriaCompartida(Parser *parser) {
   char *comando;
-  char *comandos[] = { "crear", "escribir", "leer", "liberar" };
+  char *comandos[] = { "crear", "escribir", "leer", "liberar", "help"};
   struct shmid_ds info;
   int tamano, permisos = 0666, shmid, i;
   char *memoria;
 
   if (siguienteComando(parser, &comando)) {
-    switch (indiceDeCadena(comandos, 4, comando))
+    switch (indiceDeCadena(comandos, 5, comando))
     {
     case 0:
       if (siguienteEntero(parser, &tamano)) {
@@ -82,13 +107,19 @@ int operacionesMemoriaCompartida(Parser *parser) {
         printf("No se proporcionó el shmid del bloque de memoria.\n");
       }
       return -1;
-    
+
+    case 4:
+      ayudaMemoria();
+      return 0;
+
     default:
-      printf("El comando \"%s\" no se ha reconocido.\nSólo puede ser uno de: crear, escribir, leer o liberar.\n", comando);
+      printf("\e[31mERROR:\e[0m El comando \"%s\" no se ha reconocido.\nSólo puede ser uno de: crear, escribir, leer o liberar.\n", comando);
+      ayudaMemoria();
       return -1;
     }
   } else {
-    printf("No se proporcionó una operación para el comando shm.\n");
+    printf("\e[31mERROR:\e[0m No se proporcionó una operación para el comando shm.\n");
+    ayudaMemoria();
     return -1;
   }
 }

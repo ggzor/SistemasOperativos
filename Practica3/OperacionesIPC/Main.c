@@ -6,28 +6,42 @@
 #include <stdio.h>
 #include <string.h>
 
+void ayuda() {
+  printf(
+    "OperacionesIPC - Utilerías para probar operaciones de comunicación entre procesos.\n\n"
+    "Uso: ./OperacionesIPC COMANDO [OPCIONES...]\n\n"
+    "Comandos:\n"
+    "  sem    Operaciones sobre semáforos\n"
+    "  shm    Operaciones sobre memoria compartida\n"
+    "  msg    Operaciones sobre cola de mensajes\n"
+    "  help   Muestra este mensaje de ayuda\n"
+  );
+}
+
 int main(int argc, char **argv) {
   Parser opciones = inicializarParser(argc, argv);
   char *comando;
-  char *comandos[] = { "sem", "shm", "msg" };
+  char *comandos[] = { "sem", "shm", "msg", "help" };
 
   if (siguienteComando(&opciones, &comando)) {
-    switch (indiceDeCadena(comandos, 3, comando)) {
+    switch (indiceDeCadena(comandos, 4, comando)) {
       case 0:
         return operacionesSemaforos(&opciones);
-        break;
       case 1:
         return operacionesMemoriaCompartida(&opciones);
-        break;
       case 2:
         return operacionesMensajes(&opciones);
-        break;
+      case 3:
+        ayuda();
+        return 0;
       default:
-        printf("El comando \"%s\" no se ha reconocido.\nSólo puede ser uno de: sem, shm o msg.\n", comando);
+        printf("\e[31mERROR:\e[0m El comando \"%s\" no se ha reconocido.\n", comando);
+        ayuda();
         return -1;
     }
   } else {
-    printf("No se proporcionó un comando para el programa.\n");
+    printf("\e[31mERROR:\e[0m No se proporcionó un comando para el programa.\n");
+    ayuda();
     return -1;
   }
 

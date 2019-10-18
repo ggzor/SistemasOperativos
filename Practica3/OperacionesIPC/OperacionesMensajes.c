@@ -14,16 +14,37 @@ struct mensaje {
   char mtext[TAMANO_MENSAJE];
 };
 
+void ayudaMensajes() {
+  printf(
+    "Uso: ./OperacionesIPC msg COMANDO [OPCIONES...]\n\n"
+    "Comandos:\n"
+    "  crear [PERMS=0666]\n"
+    "    Crear una nueva cola de mensajes\n"
+    "  \n"
+    "  enviar MSGID TYPE\n"
+    "    Enviar un mensaje desde con contenidos desde la entrada estándar\n"
+    "  \n"
+    "  recibir MSGID TYPE\n"
+    "    Recibir un mensaje con el tipo especificado \n"
+    "  \n"
+    "  liberar MSGID\n"
+    "    Liberar una cola de mensajes\n"
+    "  \n"
+    "  help\n"
+    "    Muestra este mensaje de ayuda\n"
+  );  
+}
+
 int operacionesMensajes(Parser *parser) {
   char *comando;
-  char *comandos[] = { "crear", "enviar", "recibir", "liberar" };
+  char *comandos[] = { "crear", "enviar", "recibir", "liberar", "help"};
   
   int permisos = 0666, msqid, tipo;
   struct mensaje msj;
   struct msqid_ds info;
 
   if (siguienteComando(parser, &comando)) {
-    switch (indiceDeCadena(comandos, 4, comando))
+    switch (indiceDeCadena(comandos, 5, comando))
     {
     case 0:
       siguienteEntero(parser, &permisos);
@@ -100,12 +121,17 @@ int operacionesMensajes(Parser *parser) {
       }
       return -1;
     
+    case 4:
+      ayudaMensajes();
+      return 0;
     default:
-      printf("El comando \"%s\" no se ha reconocido.\nSólo puede ser uno de: crear, enviar, recibir o liberar.\n", comando);
+      printf("\e[31mERROR:\e[0m El comando \"%s\" no se ha reconocido.\n", comando);
+      ayudaMensajes();
       return -1;
     }
   } else {
-    printf("No se proporcionó una operación para el comando msg.\n");
+    printf("\e[31mERROR:\e[0m No se proporcionó una operación para el comando msg.\n");
+    ayudaMensajes();
     return -1;
   }
 }
