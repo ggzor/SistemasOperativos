@@ -13,11 +13,10 @@
   background-color: tomato;
 }
 
-@keyframes forkAnimation {
-  from { -gtk-icon-transform: rotate(45deg); }
-  to { -gtk-icon-transform: rotate(90deg); }
+.fork {
+  -gtk-icon-transform: translate(0px, -150px) scale(0.15);
 }
 
-.fork {
-  animation: forkAnimation calc(attr(width) * 1s) infinite alternate ease-in-out;
+#imagen-2-2 {
+  -gtk-icon-transform: translate(-200px, -200px) scale(0.15);
 }
