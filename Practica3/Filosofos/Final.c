@@ -319,7 +319,7 @@ void *escucharNotificaciones(void *_) {
       printf("%d ", nuevoEstado[i]);
     printf("\n");
 
-    gdk_threads_add_idle_full(G_PRIORITY_HIGH_IDLE, G_SOURCE_FUNC(aplicarCambios), nuevoEstado, NULL);
+    gdk_threads_add_idle_full(G_PRIORITY_HIGH_IDLE, aplicarCambios, nuevoEstado, NULL);
   }
 }
 
