@@ -16,7 +16,3 @@
 .fork {
   -gtk-icon-transform: translate(0px, -150px) scale(0.15);
 }
-
-#imagen-2-2 {
-  -gtk-icon-transform: translate(-200px, -200px) scale(0.15);
-}
