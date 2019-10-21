@@ -17,11 +17,11 @@
 // Configuración
 #define N 5
 
-#define MIN_PENSAR 5
+#define MIN_PENSAR 2
 #define MAX_PENSAR 10
 
-#define MIN_COMER 8
-#define MAX_COMER 10
+#define MIN_COMER 3
+#define MAX_COMER 15
 
 /* Configuración interfaz */
 #define RADIO 180
@@ -318,7 +318,7 @@ void *escucharNotificaciones(void *_) {
       printf("%d ", nuevoEstado[i]);
     printf("\n");
 
-    gdk_threads_add_idle(G_SOURCE_FUNC(aplicarCambios), nuevoEstado);
+    gdk_threads_add_idle_full(G_PRIORITY_HIGH_IDLE, G_SOURCE_FUNC(aplicarCambios), nuevoEstado, NULL);
   }
 }
 
