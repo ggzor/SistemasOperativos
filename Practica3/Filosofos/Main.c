@@ -21,6 +21,7 @@
 #define RIGHT ((N + i + 1) % N)
 
 #define MUTEX    -1
+#define MUTEX_INICIO -2
 
 #define THINKING  0
 #define HUNGRY    1
@@ -43,6 +44,7 @@ int main (int argc, char **argv) {
   int i, hijo = 0;
   unsigned short iniciales[N];
   union semun operaciones;
+  struct sembuf op;
 
   estado = shmat(shmget(IPC_PRIVATE, sizeof(int) * N, IPC_CREAT | 0666), 0, 0);
   for (i = 0; i < N; i++) {
@@ -51,7 +53,7 @@ int main (int argc, char **argv) {
   }
 
   semidFilosofos = semget(IPC_PRIVATE, N, IPC_CREAT | 0666);
-  semidMutex = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
+  semidMutex = semget(IPC_PRIVATE, 2, IPC_CREAT | 0666);
 
   operaciones.array = iniciales;
   semctl(semidFilosofos, 0, SETVAL, operaciones);
@@ -61,22 +63,23 @@ int main (int argc, char **argv) {
 
   for (i = 0; i < N; i++) {
     if (fork() == 0) {
+      op.sem_num = 1;
+      op.sem_op = -1;
+      op.sem_flg = 0;
+      semop(semidMutex, &op, 1);
+
       hijo = 1;
       filosofo(i);
     }
   }
 
   if (!hijo) {
-    while (1) {
-      down(MUTEX);
-      for (i = 0; i < N; i++) {
-        printf("%d ", estado[i]);
-      }
-      printf("\n");
-      up(MUTEX);
-      
-      sleep(1);
-    }
+    op.sem_num = 1;
+    op.sem_op = N;
+    op.sem_flg = 0;
+    semop(semidMutex, &op, 1);
+
+    while (1);
   }
 }
 
@@ -85,9 +88,9 @@ void dejarTenedores(int), tomarTenedores(int);
 
 void filosofo(int i) {
   while (1) {
-    pensar();
+    // pensar();
     tomarTenedores(i);
-    comer();
+    // comer();
     dejarTenedores(i);
   }
 }
