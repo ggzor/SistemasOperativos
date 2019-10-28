@@ -148,7 +148,8 @@ int main (int argc, char **argv) {
   unsigned short iniciales[N];
   union semun operaciones;
 
-  estado = shmat(shmget(IPC_PRIVATE, sizeof(int) * N, IPC_CREAT | 0666), 0, 0);
+  shmid = shmget(IPC_PRIVATE, sizeof(int) * N, IPC_CREAT | 0666);
+  estado = shmat(shmid, 0, 0);
   for (i = 0; i < N; i++) {
     estado[i] = THINKING;
     iniciales[i] = 1;
@@ -156,7 +157,7 @@ int main (int argc, char **argv) {
 
   semidFilosofos = semget(IPC_PRIVATE, N, IPC_CREAT | 0666);
   semidMutex = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
-  msqid = msgget(IPC_PRIVATE, IPC_CREAT | 0666);
+  semidMutexNotificaciones = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
 
   operaciones.array = iniciales;
   semctl(semidFilosofos, 0, SETVAL, operaciones);
