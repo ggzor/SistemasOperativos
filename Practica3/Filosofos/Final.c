@@ -130,7 +130,8 @@ void inicializarAplicacion(int argc, char **argv) {
 
 int *estado;
 int semidFilosofos, semidMutex, semidMutexNotificaciones;
-int msqid, pipeNotificaciones[2];
+int shmid;
+int pipeNotificaciones[2];
 
 void filosofo(int);
 void *escucharNotificaciones(void *);
@@ -155,7 +156,6 @@ int main (int argc, char **argv) {
 
   semidFilosofos = semget(IPC_PRIVATE, N, IPC_CREAT | 0666);
   semidMutex = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
-  semidMutexNotificaciones = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
   msqid = msgget(IPC_PRIVATE, IPC_CREAT | 0666);
 
   operaciones.array = iniciales;
@@ -187,6 +187,11 @@ int main (int argc, char **argv) {
     pthread_create(&hiloNotificaciones, NULL, escucharNotificaciones, NULL);
 
     inicializarAplicacion(argc, argv);
+
+    semctl(semidFilosofos, 0, IPC_RMID);
+    semctl(semidMutex, 0, IPC_RMID);
+    semctl(semidMutexNotificaciones, 0, IPC_RMID);
+    shmctl(shmid, IPC_RMID, 0);
   }
 }
 
@@ -263,13 +268,22 @@ void up(int semaforo) {
   };
 
   if (semaforo == MUTEX) {
-    semop(semidMutex, &op, 1);
+    if (semop(semidMutex, &op, 1) < 0) {
+      printf("No se pudo decrementar MUTEX.\n");
+      _exit(-1);
+    }
   } else if (semaforo == MUTEX_NOTIFICACIONES) {
-    semop(semidMutexNotificaciones, &op, 1);
+    if (semop(semidMutexNotificaciones, &op, 1)) {
+      printf("No se pudo decrementar MUTEX_NOTIFICACIONES.\n");
+      _exit(-1);
+    }
   } else {
     op.sem_num = semaforo;
-    semop(semidFilosofos, &op, 1);
+    if (semop(semidFilosofos, &op, 1)) {
+      printf("No se pudo decrementar el semáforo %d.\n", semaforo);
+      _exit(-1);
   }
+}
 }
 
 void down(int semaforo) {
@@ -280,12 +294,21 @@ void down(int semaforo) {
   };
 
   if (semaforo == MUTEX) {
-    semop(semidMutex, &op, 1);
+    if (semop(semidMutex, &op, 1) < 0) {
+      printf("No se pudo decrementar MUTEX.\n");
+      _exit(-1);
+    }
   } else if (semaforo == MUTEX_NOTIFICACIONES) {
-    semop(semidMutexNotificaciones, &op, 1);
+    if (semop(semidMutexNotificaciones, &op, 1)) {
+      printf("No se pudo decrementar MUTEX_NOTIFICACIONES.\n");
+      _exit(-1);
+    }
   } else {
     op.sem_num = semaforo;
-    semop(semidFilosofos, &op, 1);
+    if (semop(semidFilosofos, &op, 1)) {
+      printf("No se pudo decrementar el semáforo %d.\n", semaforo);
+      _exit(-1);
+    }
   }
 }
 
