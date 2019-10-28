@@ -93,10 +93,14 @@ void filosofo(int i) {
 }
 
 void prueba(int);
+void notificarCambios();
 
 void dejarTenedores(int i) {
   down(MUTEX);
+  
   estado[i] = THINKING;
+  notificarCambios();
+
   prueba(LEFT);
   prueba(RIGHT);
   up(MUTEX);
@@ -104,7 +108,10 @@ void dejarTenedores(int i) {
 
 void tomarTenedores(int i) {
   down(MUTEX);
+  
   estado[i] = HUNGRY;
+  notificarCambios();
+
   prueba(i);
   up(MUTEX);
   down(i);
@@ -115,8 +122,18 @@ void prueba(int i) {
       (estado[LEFT] != EATING) &&
       (estado[RIGHT] != EATING)) {
     estado[i] = EATING;
+    notificarCambios();
+
     up(i);
   }
+}
+
+void notificarCambios() {
+  int i;
+  for (i = 0; i < N; i++) {
+    printf("%d ", estado[i]);
+  }
+  printf("\n");
 }
 
 void pensar() {
