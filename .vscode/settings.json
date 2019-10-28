@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "SConstruct": "python",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "gtk.h": "c"
     }
 }
