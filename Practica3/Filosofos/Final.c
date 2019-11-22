@@ -129,7 +129,7 @@ void inicializarAplicacion(int argc, char **argv) {
 }
 
 int *estado;
-int semidFilosofos, semidMutex, semidMutexNotificaciones;
+int semidFilosofos, semidMutex, semidMutexNotificaciones, semidInicio;
 int shmid;
 int pipeNotificaciones[2];
 
@@ -143,6 +143,7 @@ int main (int argc, char **argv) {
     unsigned short *array;
     struct seminfo *_buf;
   };  
+  struct sembuf op;
 
   int i, hijo = 0;
   unsigned short iniciales[N];
@@ -158,6 +159,7 @@ int main (int argc, char **argv) {
   semidFilosofos = semget(IPC_PRIVATE, N, IPC_CREAT | 0666);
   semidMutex = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
   semidMutexNotificaciones = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
+  semidInicio = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
 
   operaciones.array = iniciales;
   semctl(semidFilosofos, 0, SETVAL, operaciones);
@@ -174,18 +176,30 @@ int main (int argc, char **argv) {
     if (fork() == 0) {
       hijo = 1;
 
+      op.sem_num = 0;
+      op.sem_op = -1;
+      op.sem_flg = 0;
+      semop(semidInicio, &op, 1);
+
       // Cerrar pipe en cada hijo para lectura
       close(pipeNotificaciones[0]);
 
       filosofo(i);
+      _exit(-1);
     }
   }
 
   if (!hijo) {
     // Cerrar el pipe en el padre para escritura
+    close(pipeNotificaciones[1]);
 
     pthread_t hiloNotificaciones; 
     pthread_create(&hiloNotificaciones, NULL, escucharNotificaciones, NULL);
+
+    op.sem_num = 0;
+    op.sem_op = N;
+    op.sem_flg = 0;
+    semop(semidInicio, &op, 1);
 
     inicializarAplicacion(argc, argv);
 
@@ -283,8 +297,8 @@ void up(int semaforo) {
     if (semop(semidFilosofos, &op, 1)) {
       printf("No se pudo decrementar el semáforo %d.\n", semaforo);
       _exit(-1);
+    }
   }
-}
 }
 
 void down(int semaforo) {
