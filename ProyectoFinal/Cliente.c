@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
       buffer = malloc(tamano);
       read(cd, buffer, tamano);
 
-      printf("%d .- %s\n", i, buffer);
+      printf("%d .- %s\n", i++, buffer);
     }
   } while(tamano != -1);
 
