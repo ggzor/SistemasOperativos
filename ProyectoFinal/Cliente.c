@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
   int canales = 2;
   int formato = AFMT_S16_LE;
 
-  if ((tarjetaAudio = open("/dev/dsp", O_WRONLY)) == -1) {
+  if ((tarjetaAudio = open("/dev/dsp1", O_WRONLY)) == -1) {
     perror("Error al abrir tarjeta de Audio");
     exit(-1);
   }
