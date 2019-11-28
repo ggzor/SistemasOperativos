@@ -85,36 +85,6 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  printf("\nDescargando (%d bytes)...\n", tamano);
-  
-  if (buffer != NULL)
-    free(buffer);
-  
-  buffer = malloc(tamano);
-  int recibido = 0;
-  int progresoAnterior = 0;
-
-  while (recibido < tamano) {
-    int leidos = read(cd, buffer + recibido, tamano - recibido);
-
-    if (leidos <= 0) {
-      printf("No se pudo recibir el archivo completo.\n");
-      exit(-1);
-    }
-
-    recibido += leidos;
-
-    int progreso = (int)((float)recibido / tamano * 100);
-    if (progreso - progresoAnterior >= 5) {
-      printf("Progreso %02d%\n", progreso);
-      progresoAnterior = progreso;
-    }
-  }
-  printf("Terminado (leídos %d bytes).\n", recibido);
-  
-  close(cd);
-  printf("\nDesconectando del servidor.\nReproduciendo...\n");
-
   int tarjetaAudio;
   int taza = 48000;
   int canales = 2;
@@ -138,7 +108,36 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  write(tarjetaAudio, buffer, tamano);
+  printf("\nDescargando (%d bytes)...\n", tamano);
+  
+  if (buffer != NULL)
+    free(buffer);
+  
+  buffer = malloc(tamano);
+  int recibido = 0;
+  int progresoAnterior = 0;
+
+  while (recibido < tamano) {
+    int leidos = read(cd, buffer + recibido, tamano - recibido);
+    write(tarjetaAudio, buffer + recibido, leidos);
+
+    if (leidos <= 0) {
+      printf("No se pudo recibir el archivo completo.\n");
+      exit(-1);
+    }
+
+    recibido += leidos;
+
+    int progreso = (int)((float)recibido / tamano * 100);
+    if (progreso - progresoAnterior >= 5) {
+      printf("Progreso %02d%\n", progreso);
+      progresoAnterior = progreso;
+    }
+  }
+  printf("Terminado (leídos %d bytes).\n", recibido);
+  
+  close(cd);
+  printf("\nDesconectando del servidor.\n");
 
   if (ioctl(tarjetaAudio, SNDCTL_DSP_SYNC) == -1) {
     perror("Error al enviar pista");
