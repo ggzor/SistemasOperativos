@@ -83,7 +83,6 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
         printf("[%d] Archivo cargado en buffer. Enviando...\n", id);
         write(fd, &tamano, sizeof(int));
 
-        while ((enviado += write(fd, buffer + enviado, tamano - enviado)) < tamano);
         int progresoAnterior = 0;
       
         while (enviado < tamano) {
