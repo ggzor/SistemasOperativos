@@ -92,7 +92,23 @@ int main(int argc, char **argv) {
   
   buffer = malloc(tamano);
   int recibido = 0;
-  while ((recibido += read(cd, buffer + recibido, tamano - recibido)) < tamano);
+  int progresoAnterior = 0;
+
+  while (recibido < tamano) {
+    int leidos = read(cd, buffer + recibido, tamano - recibido);
+
+    if (leidos <= 0) {
+      printf("No se pudo recibir el archivo completo.\n");
+      exit(-1);
+    }
+
+    recibido += leidos;
+
+    int progreso = recibido * 100 / tamano;
+    if (progreso % 5 == 0 && progreso > progresoAnterior)
+      printf("Progreso %02d%\n", progreso);
+    progresoAnterior = progreso;
+  }
   printf("Terminado (leídos %d bytes).\n", recibido);
   
   close(cd);
