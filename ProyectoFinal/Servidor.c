@@ -55,7 +55,7 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
   DIR *directorio;
   struct stat st;
   struct dirent *archivo;
-  int tamano;
+  int tamano, enviado = 0;
   char *buffer;
 
   char rutaCompleta[1000];
@@ -82,7 +82,10 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
 
         printf("[%d] Archivo cargado en buffer. Enviando...\n", id);
         write(fd, &tamano, sizeof(int));
-        write(fd, buffer, tamano);
+
+        while ((enviado += write(fd, buffer + enviado, tamano - enviado)) < tamano);
+
+	printf("[%d] Enviados %d bytes\n", id, enviado);
         free(buffer);
         printf("[%d] Archivo %s enviado.\n", id, archivo->d_name);
 

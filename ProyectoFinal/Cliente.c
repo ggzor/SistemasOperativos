@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 
   if (argc != 3) {
     printf("Uso: ./Cliente <host> <puerto>\n");
+    exit(-1);
   }
 
   if ((cd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -41,7 +42,7 @@ int main(int argc, char **argv) {
   cliente.sin_family = AF_INET;
   cliente.sin_port = htons(atoi(argv[2]));
   memcpy(&cliente.sin_addr.s_addr, servidor->h_addr, servidor->h_length);
-  
+ 
   printf("Conectando con %s:%s\n", argv[1], argv[2]);
   if (connect(cd, (struct sockaddr *)&cliente, sizeof(cliente)) < 0) {
     perror("No se pudo conectar con el servidor");
@@ -84,15 +85,18 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  printf("\nDescargando (%d bytes)...", tamano);
+  printf("\nDescargando (%d bytes)...\n", tamano);
   
   if (buffer != NULL)
     free(buffer);
   
   buffer = malloc(tamano);
-  read(cd, buffer, tamano);
+  int recibido = 0;
+  while ((recibido += read(cd, buffer + recibido, tamano - recibido)) < tamano);
+  printf("Terminado (leídos %d bytes).\n", recibido);
+  
   close(cd);
-  printf("Terminado.\nDesconectando del servidor.\nReproduciendo...\n");
+  printf("\nDesconectando del servidor.\nReproduciendo...\n");
 
   int tarjetaAudio;
   int taza = 48000;
@@ -100,7 +104,7 @@ int main(int argc, char **argv) {
   int formato = AFMT_S16_LE;
   int tiempo = 200;
 
-  if ((tarjetaAudio = open("/dev/dsp1", O_WRONLY)) == -1) {
+  if ((tarjetaAudio = open("/dev/dsp", O_WRONLY)) == -1) {
     perror("Error al abrir tarjeta de Audio");
     exit(-1);
   }
