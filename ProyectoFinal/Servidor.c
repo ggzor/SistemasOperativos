@@ -1,18 +1,18 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
-#include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+#include <unistd.h>
 
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <netdb.h>
+#include <netinet/in.h>
 
 int listarDirectorio(int id, const char *nombreDirectorio, const int fd) {
   DIR *directorio;
@@ -24,7 +24,8 @@ int listarDirectorio(int id, const char *nombreDirectorio, const int fd) {
 
   while (archivo = readdir(directorio)) {
     // Ignorar directorio actual y anterior
-    if (strncmp(archivo->d_name, ".", 2) != 0 && strncmp(archivo->d_name, "..", 3) != 0) {
+    if (strncmp(archivo->d_name, ".", 2) != 0 &&
+        strncmp(archivo->d_name, "..", 3) != 0) {
       tamano = strlen(archivo->d_name) + 1;
       printf("[%d] Enviando tamaño de cadena (%d)\n", id, tamano);
       if (write(fd, &tamano, sizeof(int)) <= 0) {
@@ -50,7 +51,8 @@ int listarDirectorio(int id, const char *nombreDirectorio, const int fd) {
   return 0;
 }
 
-void enviarCancion(const int id, const char *nombreDirectorio, const int indice, const int fd) {
+void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
+                   const int fd) {
   int i = 1;
   DIR *directorio;
   struct stat st;
@@ -64,7 +66,8 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
   directorio = opendir(nombreDirectorio);
 
   while (archivo = readdir(directorio)) {
-    if (strncmp(archivo->d_name, ".", 2) != 0 && strncmp(archivo->d_name, "..", 3) != 0) {
+    if (strncmp(archivo->d_name, ".", 2) != 0 &&
+        strncmp(archivo->d_name, "..", 3) != 0) {
       if (i == indice) {
         printf("[%d] Archivo con índice %d encontrado.\n", id, indice);
 
@@ -73,7 +76,8 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
         tamano = st.st_size;
         buffer = malloc(tamano);
 
-        printf("[%d] Cargando archivo %s (%d bytes).\n", id, archivo->d_name, tamano);
+        printf("[%d] Cargando archivo %s (%d bytes).\n", id, archivo->d_name,
+               tamano);
         {
           int archivo = open(rutaCompleta, O_RDONLY);
           read(archivo, buffer, tamano);
@@ -84,24 +88,27 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
         write(fd, &tamano, sizeof(int));
 
         int progresoAnterior = 0;
-      
+
         while (enviado < tamano) {
           int escritos = write(fd, buffer + enviado, tamano - enviado);
-      
+
           if (escritos <= 0) {
-            printf("[%d] No se pudo enviar el archivo completo.\n");
+            printf("[%d] No se pudo enviar el archivo completo.\n", id);
             exit(-1);
+          } else {
+            printf("[%d] Escribiendo %d bytes.\n", id, escritos);
           }
-      
+
           enviado += escritos;
-      
-          int progreso = enviado * 100 / tamano;
-          if (progreso % 5 == 0 && progreso > progresoAnterior)
+
+          int progreso = (int)((float)enviado / tamano * 100);
+          if (progreso - progresoAnterior >= 5) {
             printf("[%d] Progreso %02d%\n", id, progreso);
-          progresoAnterior = progreso;
+            progresoAnterior = progreso;
+          }
         }
 
-	printf("[%d] Enviados %d bytes\n", id, enviado);
+        printf("[%d] Enviados %d bytes\n", id, enviado);
         free(buffer);
         printf("[%d] Archivo %s enviado.\n", id, archivo->d_name);
 
@@ -139,7 +146,7 @@ int main(int argc, char **argv) {
   servidor.sin_family = AF_INET;
   servidor.sin_port = htons(atoi(argv[2]));
   servidor.sin_addr.s_addr = INADDR_ANY;
-  
+
   if (bind(sd, (struct sockaddr *)&servidor, sizeof(servidor)) < 0) {
     perror("No se pudo asignar el puerto");
     exit(-1);
@@ -150,14 +157,16 @@ int main(int argc, char **argv) {
 
   while (esPadre) {
     int cd = accept(sd, (struct sockaddr *)&cliente, &longitudCliente);
-    printf("[%d] Conectado con %s:%d\n", ++idActual, inet_ntoa(cliente.sin_addr), htons(cliente.sin_port));
+    printf("[%d] Conectado con %s:%d\n", ++idActual,
+           inet_ntoa(cliente.sin_addr), htons(cliente.sin_port));
 
     if (fork() == 0) {
       int indice;
       esPadre = 0;
 
       if (listarDirectorio(idActual, argv[1], cd) == -1) {
-        printf("[%d] No se pudo completar el listado del directorio.\n", idActual);
+        printf("[%d] No se pudo completar el listado del directorio.\n",
+               idActual);
         printf("[%d] Sesión terminada.\n", idActual);
         exit(1);
       }
