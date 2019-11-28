@@ -117,9 +117,8 @@ int main(int argc, char **argv) {
 
   int tarjetaAudio;
   int taza = 48000;
-  int canales = 1;
+  int canales = 2;
   int formato = AFMT_S16_LE;
-  int tiempo = 200;
 
   if ((tarjetaAudio = open("/dev/dsp", O_WRONLY)) == -1) {
     perror("Error al abrir tarjeta de Audio");
@@ -139,7 +138,7 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  write(tarjetaAudio, buffer, taza * tiempo * (canales));
+  write(tarjetaAudio, buffer, tamano);
 
   if (ioctl(tarjetaAudio, SNDCTL_DSP_SYNC) == -1) {
     perror("Error al enviar pista");
