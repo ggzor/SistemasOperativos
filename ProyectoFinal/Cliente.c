@@ -104,10 +104,11 @@ int main(int argc, char **argv) {
 
     recibido += leidos;
 
-    int progreso = recibido * 100 / tamano;
-    if (progreso % 5 == 0 && progreso > progresoAnterior)
+    int progreso = (int)((float)recibido / tamano * 100);
+    if (progreso - progresoAnterior >= 5) {
       printf("Progreso %02d%\n", progreso);
-    progresoAnterior = progreso;
+      progresoAnterior = progreso;
+    }
   }
   printf("Terminado (leídos %d bytes).\n", recibido);
   
