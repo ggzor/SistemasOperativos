@@ -87,7 +87,7 @@ void enviarCancion(const int id, const char *nombreDirectorio, const int indice,
         int progresoAnterior = 0;
       
         while (enviado < tamano) {
-          int escritos = write(cd, buffer + enviado, tamano - enviado);
+          int escritos = write(fd, buffer + enviado, tamano - enviado);
       
           if (escritos <= 0) {
             printf("[%d] No se pudo enviar el archivo completo.\n");
