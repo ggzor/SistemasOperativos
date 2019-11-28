@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   }
 
   int tarjetaAudio;
-  int taza = 48000;
+  int tasa = 48000;
   int canales = 2;
   int formato = AFMT_S16_LE;
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     perror("Error al leer el formato de pista\n");
     exit(-1);
   }
-  if (ioctl(tarjetaAudio, SNDCTL_DSP_SPEED, &taza) == -1) {
+  if (ioctl(tarjetaAudio, SNDCTL_DSP_SPEED, &tasa) == -1) {
     perror("Error al configurar la taza de muestreo\n");
     exit(-1);
   }
@@ -117,9 +117,18 @@ int main(int argc, char **argv) {
   int recibido = 0;
   int progresoAnterior = 0;
 
+  int bufferRepInicio = 0;
+  int bufferRepFin = 0;
+
   while (recibido < tamano) {
     int leidos = read(cd, buffer + recibido, tamano - recibido);
-    write(tarjetaAudio, buffer + recibido, leidos);
+
+    bufferRepFin += leidos;
+
+    if (bufferRepFin - bufferRepInicio > tasa * 4 * 5) {
+      write(tarjetaAudio, buffer + bufferRepInicio, bufferRepFin - bufferRepInicio);
+      bufferRepInicio = bufferRepFin;
+    }
 
     if (leidos <= 0) {
       printf("No se pudo recibir el archivo completo.\n");
