@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
       int formato = AFMT_S16_LE;
 
       if ((tarjetaAudio = open("/dev/dsp1", O_WRONLY)) == -1) {
-        perror("Error al abrir tarjeta de Audio");
+        perror("\nError al abrir tarjeta de Audio\n");
         exit(-1);
       }
 

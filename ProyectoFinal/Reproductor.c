@@ -8,7 +8,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/soundcard.h>
-#define tiempo 800
+#define tiempo 1000
 
 int main(int argc, char *argv[]) {
   int archivo;
