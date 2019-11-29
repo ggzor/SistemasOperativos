@@ -164,20 +164,27 @@ int main(int argc, char **argv) {
       int indice;
       esPadre = 0;
 
-      if (listarDirectorio(idActual, argv[1], cd) == -1) {
-        printf("[%d] No se pudo completar el listado del directorio.\n",
-               idActual);
-        printf("[%d] Sesión terminada.\n", idActual);
-        exit(1);
-      }
+      int accion;
 
-      if (read(cd, &indice, sizeof(int)) <= 0) {
-        printf("[%d] No se pudo leer el índice.\n", idActual);
-        printf("[%d] Sesión terminada.\n", idActual);
-        exit(1);
-      }
+      read(cd, &accion, sizeof(int));
 
-      enviarCancion(idActual, argv[1], indice, cd);
+      if (accion == 0) {
+        if (listarDirectorio(idActual, argv[1], cd) == -1) {
+          printf("[%d] No se pudo completar el listado del directorio.\n",
+                 idActual);
+          printf("[%d] Sesión terminada.\n", idActual);
+          exit(1);
+        }
+      } else if (accion == 1) {
+        if (read(cd, &indice, sizeof(int)) <= 0) {
+          printf("[%d] No se pudo leer el índice.\n", idActual);
+          printf("[%d] Sesión terminada.\n", idActual);
+          exit(1);
+        }
+
+        enviarCancion(idActual, argv[1], indice, cd);
+      }
+      
       close(cd);
       printf("[%d] Sesión terminada.\n", idActual);
     }
