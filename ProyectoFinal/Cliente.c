@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
       buffer = malloc(tamano);
       int recibido = 0;
 
+      printf("Descargando canción.\n");
       while (recibido < tamano) {
         int leidos = read(cd, buffer + recibido, tamano - recibido);
 
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
 
         recibido += leidos;
       }
-      
+      printf("Descarga finalizada.\n");
       close(cd);
 
       int tarjetaAudio;
